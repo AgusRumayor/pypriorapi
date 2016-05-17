@@ -48,8 +48,10 @@ class Collection (object):
 		tree.treeroot = tree.current
 		tree.next = tree.unordered_list.pop()
         	tree.jresp = {'remain':tree.unordered_list, 'item':tree.current.getNodeValue(), 'compare':tree.next, 'token':token,
-		'PUT':[{"lt":"/order/%s/%s/%s"%(urllib.quote(token), tree.current.getNodeValue(), tree.next)}, 
-		{"gt":"/order/%s/%s/%s"%(urllib.quote(token), tree.next, tree.current.getNodeValue())}]}
+		'links':[{"self":"/order/"},
+		{'order':'/order/%s'%(urllib.quote(token))},
+		{'lt':'/order/%s/%s/%s'%(urllib.quote(token), tree.current.getNodeValue(), tree.next)}, 
+		{'gt':'/order/%s/%s/%s'%(urllib.quote(token), tree.next, tree.current.getNodeValue())}]}
 		transaction.commit()
 		connection.close()
 		db.close()
@@ -70,8 +72,16 @@ class Collection (object):
                         storage.close()
                         return
 		lst = list(btree.inorder(tree))
-		print lst
-		resp.body = json.dumps(lst)
+		tree.jresp = {'data':lst, 'item':tree.current.getNodeValue(), 'compare':tree.next,
+                'links':[{"new":"/order/"},
+                {"self":"/order/%s"%(urllib.quote(token))},
+                {"lt":"/order/%s/%s/%s"%(urllib.quote(token), tree.current.getNodeValue(), tree.next)},
+                {"gt":"/order/%s/%s/%s"%(urllib.quote(token), tree.next, tree.current.getNodeValue())}]}
+		transaction.commit()
+		connection.close()
+                db.close()
+                storage.close()
+		resp.body = json.dumps(tree.jresp)
 		
 	def on_put(self, req, resp, token, left, right):
 		storage = ZODB.FileStorage.FileStorage('trees/'+token+'.fs')
@@ -92,7 +102,6 @@ class Collection (object):
 			db.close()
                 	storage.close()
 			return
-		print "Nodo"+tree.current.getNodeValue()
 		if left == tree.current.getNodeValue():
 			if tree.current.getRightChild() == None:
 				tree.current.insertRight(right)
@@ -113,10 +122,11 @@ class Collection (object):
 					tree.next = "None"
 			else:
 				tree.current = tree.current.getLeftChild()
-				print "2"+tree.current.getNodeValue()
-		tree.jresp = {'remain':tree.unordered_list, 'item':tree.current.getNodeValue(), 'compare':tree.next, 'token':token,
-		'PUT':[{"lt":"/order/%s/%s/%s"%(urllib.quote(token), tree.current.getNodeValue(), tree.next)},
-		{"gt":"/order/%s/%s/%s"%(urllib.quote(token),tree.next, tree.current.getNodeValue())}]}
+		tree.jresp = {'remain':tree.unordered_list, 'item':tree.current.getNodeValue(), 'compare':tree.next,
+		'links':[{"new":"/order/"},
+                {"order":"/order/%s"%(urllib.quote(token))},
+                {"lt":"/order/%s/%s/%s"%(urllib.quote(token), tree.current.getNodeValue(), tree.next)},
+                {"gt":"/order/%s/%s/%s"%(urllib.quote(token), tree.next, tree.current.getNodeValue())}]}
 		transaction.commit()
 		connection.close()
 		db.close()
