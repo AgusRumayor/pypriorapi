@@ -83,7 +83,26 @@ class Collection (object):
                 storage.close()
 		resp.body = json.dumps(tree.jresp)
 		
-	def on_put(self, req, resp, token, left, right):
+	def on_put(self, req, resp, token):
+		if req.content_length in (None, 0):
+                        # Nothing to do
+                        return
+
+                body = req.stream.read()
+                if not body:
+                        raise falcon.HTTPBadRequest('Empty request body',
+                                        'A valid JSON document is required.')
+
+                try:
+                        req.context['doc'] = json.loads(body.decode('utf-8'))
+			left = req.context['doc']['left']
+			right = req.context['doc']['right']
+		except (ValueError, UnicodeDecodeError):
+                        raise falcon.HTTPError(falcon.HTTP_753,
+                                   'Malformed JSON',
+                                   'Could not decode the request body. The '
+                                   'JSON was incorrect or not encoded as '
+                                   'UTF-8.')
 		storage = ZODB.FileStorage.FileStorage('trees/'+token+'.fs')
 		db = ZODB.DB(storage)
 		connection = db.open()
