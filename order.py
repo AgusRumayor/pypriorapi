@@ -8,7 +8,7 @@ from persistent import Persistent
 import uuid
 import urllib
 import btree
-
+from pprint import pprint
 class Collection (object):
 	def on_post(self, req, resp):
 		# req.stream corresponds to the WSGI wsgi.input environ variable,
@@ -17,14 +17,15 @@ class Collection (object):
         	# See also: PEP 3333
         	if req.content_length in (None, 0):
             		# Nothing to do
-  	          	return
-
+  	          	print "nothin"
+			return
         	body = req.stream.read()
         	if not body:
             		raise falcon.HTTPBadRequest('Empty request body',
                                         'A valid JSON document is required.')
 
         	try:
+			pprint(body)
             		req.context['doc'] = json.loads(body.decode('utf-8'))
 			token = str(uuid.uuid4())
                 	storage = ZODB.FileStorage.FileStorage('trees/'+token+'.fs')
@@ -47,7 +48,8 @@ class Collection (object):
 		tree.current = tree
 		tree.treeroot = tree.current
 		tree.next = tree.unordered_list.pop()
-        	tree.jresp = {'remain':tree.unordered_list, 'item':tree.current.getNodeValue(), 'compare':tree.next, 'token':token,
+        	tree.ordered = False
+		tree.jresp = {'remain':tree.unordered_list, 'item':tree.current.getNodeValue(), 'compare':tree.next, 'token':token, 'ordered':tree.ordered,
 		'links':[{"self":"/order/"},
 		{'order':'/order/%s'%(urllib.quote(token))},
 		{'lt':'/order/%s/%s/%s'%(urllib.quote(token), tree.current.getNodeValue(), tree.next)}, 
@@ -72,7 +74,7 @@ class Collection (object):
                         storage.close()
                         return
 		lst = list(btree.inorder(tree))
-		tree.jresp = {'data':lst, 'item':tree.current.getNodeValue(), 'compare':tree.next,
+		tree.jresp = {'data':lst, 'item':tree.current.getNodeValue(), 'compare':tree.next, 'token':token, 'ordered':tree.ordered,
                 'links':[{"new":"/order/"},
                 {"self":"/order/%s"%(urllib.quote(token))},
                 {"lt":"/order/%s/%s/%s"%(urllib.quote(token), tree.current.getNodeValue(), tree.next)},
@@ -128,6 +130,7 @@ class Collection (object):
 				if len(tree.unordered_list)>0:
 					tree.next = tree.unordered_list.pop()
 				else:
+					tree.ordered = True
 					tree.next = "None"
 			else:
 				tree.current = tree.current.getRightChild()
@@ -138,10 +141,11 @@ class Collection (object):
 				if len(tree.unordered_list)>0:
 					tree.next = tree.unordered_list.pop()
 				else:
+					tree.ordered = True
 					tree.next = "None"
 			else:
 				tree.current = tree.current.getLeftChild()
-		tree.jresp = {'remain':tree.unordered_list, 'item':tree.current.getNodeValue(), 'compare':tree.next,
+		tree.jresp = {'remain':tree.unordered_list, 'item':tree.current.getNodeValue(), 'compare':tree.next, 'token':token, 'ordered':tree.ordered,
 		'links':[{"new":"/order/"},
                 {"order":"/order/%s"%(urllib.quote(token))},
                 {"lt":"/order/%s/%s/%s"%(urllib.quote(token), tree.current.getNodeValue(), tree.next)},
