@@ -8,10 +8,11 @@ from persistent import Persistent
 import btree
 
 from trello import TrelloApi
+import trelloconfig
 
 class Collection (object):
 	def on_post(self, req, resp, token):
-		trello = TrelloApi('6eae854c8007ec32e40d67fb5ee455a7', token='6bcbba6ff807dfc62316d45ad7b00d7bce44e7c257a3574a7482f3dc666ad79d')
+		trello = TrelloApi(trelloconfig.api_key, token=trelloconfig.token)
 		trello_token = trello.get_token_url('My App', expires='30days', write_access=True)
 		storage = ZODB.FileStorage.FileStorage('trees/'+token+'.fs')
              	db = ZODB.DB(storage)
