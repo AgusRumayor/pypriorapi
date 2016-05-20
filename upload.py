@@ -31,6 +31,6 @@ class Collection (object):
                 db.close()
                 storage.close()
 		if len(lst)> 0:
-			id_new = trello.boards.new_list('E3LNxfKb', token)['id']
+			id_new = trello.boards.new_list('Le5vKw7H', token)['id']
 		for card in lst:
 			trello.cards.new(card, id_new)
