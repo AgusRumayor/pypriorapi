@@ -31,3 +31,13 @@ class Lists (object):
 		for lst in response:
 			lists[lst['id']]=lst['name']
 		resp.body = json.dumps(lists)
+
+class Cards (object):
+	def on_get(self, req, resp, lst):
+		trello = TrelloApi(trelloconfig.api_key, token=trelloconfig.token)
+		trello_token = trello.get_token_url('My App', expires='30days', write_access=True)
+		response=trello.lists.get_card(lst)
+		cards= []
+		for card in response:
+			cards.append(card['name'])
+		resp.body = json.dumps(cards)
