@@ -4,7 +4,7 @@ import order
 import upload
 import trellohandler
 
-cors = CORS(allow_origins_list=['http://localhost:8080'], allow_methods_list=['POST', 'GET', 'PUT'])
+cors = CORS(allow_all_origins=True,allow_origins_list=['http://localhost:8000', 'http://localhost:8080', 'http://52.34.119.6'], allow_methods_list=['POST', 'GET', 'PUT'])
 api = application = falcon.API(middleware=[cors.middleware])
 
 order_collection = order.Collection()
