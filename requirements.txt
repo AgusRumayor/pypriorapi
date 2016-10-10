@@ -1,3 +1,4 @@
 falcon==1.0.0
 ZODB==5.0.0
 falcon-cors==1.0.1
+trello==0.9.1
