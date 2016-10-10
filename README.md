@@ -4,4 +4,4 @@ This is a CORS web application built in top of the [Falcon framework](https://fa
 
 # License
 
-[GNU GENERAL PUBLIC LICENSE](LICENSE.md)
+[GNU GENERAL PUBLIC LICENSE](./LICENSE.md)
